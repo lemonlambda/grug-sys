@@ -2,6 +2,8 @@
 name = "grug-sys"
 version = "0.1.0"
 edition = "2024"
+description = "Unsafe bindings for https://github.com/grug-lang/grug"
+license = "MIT"
 
 [dependencies]
 
