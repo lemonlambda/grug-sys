@@ -1,6 +1,6 @@
 [package]
 name = "grug-sys"
-version = "0.1.0"
+version = "0.1.1+2025-08-30"
 edition = "2024"
 description = "Unsafe bindings for https://github.com/grug-lang/grug"
 license = "MIT"
