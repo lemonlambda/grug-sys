@@ -1,0 +1,23 @@
+{
+  "entities": {
+    "World": {
+      "description": "Let's print in here",
+      "on_functions": {
+        "on_update": {
+          "description": "Called every tick"
+        }
+      }
+    }
+  },
+  "game_functions": {
+    "println": {
+      "description": "Prints a string with a new line",
+      "arguments": [
+        {
+          "name": "msg",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

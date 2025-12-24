@@ -1,4 +1,4 @@
-//! Please see https://github.com/grug-lang/grug for documentation
+//! Please see <https://github.com/grug-lang/grug> for documentation
 
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
