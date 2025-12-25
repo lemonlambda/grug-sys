@@ -2,3 +2,4 @@
 *mods_dll/
 grug.o
 libgrug.a
+Cargo.lock
