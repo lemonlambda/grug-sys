@@ -76,4 +76,6 @@ fn main() {
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");
+
+    println!("cargo:rustc-link-arg=-rdynamic");
 }

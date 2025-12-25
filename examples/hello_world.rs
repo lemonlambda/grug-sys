@@ -1,8 +1,7 @@
 use std::{
-    ffi::{CStr, CString, c_char},
+    ffi::{CStr, CString, c_char, c_void},
     ptr::null_mut,
-    str::from_utf8_unchecked,
-    sync::Mutex,
+    slice::from_raw_parts,
 };
 
 use grug_sys::*;
@@ -32,7 +31,6 @@ unsafe extern "C" fn runtime_error_handler(
         "<unknown path>".into()
     };
 
-    // Printing is OK — no panics, no unwinding
     eprintln!(
         "Grug runtime error: {}\n  at {} ({})",
         reason, fn_name, fn_path
@@ -62,12 +60,32 @@ impl<const S: usize> ToStringWrapper for [i8; S] {
     }
 }
 
-fn main() {
-    let path = std::env::current_dir().unwrap();
-    println!("The current directory is {}", path.display());
+fn get_entities_by_type(name: &str) -> Vec<&grug_file> {
+    #[allow(static_mut_refs)]
+    let mods = unsafe { grug_mods };
+    let mods = unsafe { from_raw_parts(mods.dirs, mods.dirs_size) };
 
+    let mut return_files = vec![];
+
+    for mod_ in mods.iter() {
+        let files = unsafe { from_raw_parts(mod_.files, mod_.files_size) };
+        for file in files {
+            let mod_entity_name = unsafe {
+                CStr::from_ptr(file.entity_type)
+                    .to_string_lossy()
+                    .into_owned()
+            };
+            if mod_entity_name == name {
+                return_files.push(file);
+            }
+        }
+    }
+
+    return_files
+}
+
+fn main() {
     unsafe {
-        // Keep CStrings alive for the duration of the call
         let mod_api = CString::new("./examples/mod_api.json").unwrap();
         let mods = CString::new("./examples/mods").unwrap();
         let dlls = CString::new("./examples/mods_dll").unwrap();
@@ -82,18 +100,16 @@ fn main() {
 
         if failed {
             #[allow(static_mut_refs)]
-            let error = grug_error.clone();
+            let error = grug_error;
             panic!("Grug failed to initialize {}", error.msg.to_string());
         }
-
-        grug_set_on_fns_to_safe_mode();
 
         loop {
             let failed = grug_regenerate_modified_mods();
 
             if failed {
                 #[allow(static_mut_refs)]
-                let error = grug_error.clone();
+                let error = grug_error;
                 if error.has_changed {
                     if grug_loading_error_in_grug_file {
                         eprintln!(
@@ -113,20 +129,14 @@ fn main() {
 
                 continue;
             }
-            println!("Successfully loaded");
 
-            let entity = CString::new("WorldEntity").unwrap();
-            let file = grug_get_entity_file(entity.as_ptr());
-
-            #[allow(static_mut_refs)]
-            let mods = grug_mods.clone();
-            println!("{:#?}", mods);
-
-            if file == null_mut() {
-                panic!("Entity file not found");
+            for file in get_entities_by_type("World") {
+                let ptr = file.on_fns as *mut unsafe extern "C" fn(*mut c_void);
+                let funcs = from_raw_parts(ptr, 1); // the 1 here is because we only have one on_function
+                for f in funcs {
+                    f(null_mut()); // The null mut would be the arguments passed to this function
+                }
             }
         }
-
-        // use `file` here
     }
 }
