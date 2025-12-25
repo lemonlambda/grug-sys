@@ -1,2 +1,4 @@
 /target
 *mods_dll/
+grug.o
+libgrug.a

@@ -2,6 +2,8 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    let out_dir = env::var("OUT_DIR").unwrap();
+
     // This is the directory where the `c` library is located.
     let libdir_path = PathBuf::from("./grug")
         // Canonicalize the path as `rustc-link-search` requires an absolute
@@ -14,9 +16,9 @@ fn main() {
     let headers_path_str = headers_path.to_str().expect("Path is not a valid string");
 
     // This is the path to the intermediate object file for our library.
-    let obj_path = libdir_path.join("grug.o");
+    let obj_path = PathBuf::from(format!("{out_dir}/grug.o"));
     // This is the path to the static library file.
-    let lib_path = libdir_path.join("libgrug.a");
+    let lib_path = PathBuf::from(format!("{out_dir}/libgrug.a"));
 
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search={}", libdir_path.to_str().unwrap());
